@@ -1,0 +1,2350 @@
+task_id,prompt,zh_prompt,canonical_solution,test,entry_point,rules,max_n
+HumanEval/0,"from typing import List
+
+
+def has_close_elements(numbers: List[float], threshold: float) -> bool:
+    """""" Check if in given list of numbers, are any two numbers closer to each other than
+    given threshold.
+    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)
+    False
+    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)
+    True
+    """"""
+","from typing import List
+
+
+def has_close_elements(numbers: List[float], threshold: float) -> bool:
+    """""" 检查在给定的数字列表中，是否有两个数字的距离小于给定的阈值    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)
+    False
+    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)
+    True
+    """"""
+","    for idx, elem in enumerate(numbers):
+        for idx2, elem2 in enumerate(numbers):
+            if idx != idx2:
+                distance = abs(elem - elem2)
+                if distance < threshold:
+                    return True
+
+    return False
+","
+
+METADATA = {
+    'author': 'jt',
+    'dataset': 'test'
+}
+
+
+def check(candidate):
+    assert candidate([1.0, 2.0, 3.9, 4.0, 5.0, 2.2], 0.3) == True
+    assert candidate([1.0, 2.0, 3.9, 4.0, 5.0, 2.2], 0.05) == False
+    assert candidate([1.0, 2.0, 5.9, 4.0, 5.0], 0.95) == True
+    assert candidate([1.0, 2.0, 5.9, 4.0, 5.0], 0.8) == False
+    assert candidate([1.0, 2.0, 3.0, 4.0, 5.0, 2.0], 0.1) == True
+    assert candidate([1.1, 2.2, 3.1, 4.1, 5.1], 1.0) == True
+    assert candidate([1.1, 2.2, 3.1, 4.1, 5.1], 0.5) == False
+
+",has_close_elements,"def rules(n):
+    import numpy
+    import random
+    import copy
+
+    def takeSecond(elem):
+        return elem[1]
+    def swap(t1,t2):
+        return t2,t1
+
+    numbers = random.sample(range(0, n), n)
+    numbers = [x*0.01 for x in numbers]
+
+    tmp_ = copy.deepcopy(numbers)
+    tmp_.sort()
+
+
+    abs_list = []
+    for i in range(n-1):
+        abs_list.append([i,abs(tmp_[i+1] - tmp_[i])])
+    abs_list.sort(key=takeSecond)
+    
+    threshold = random.uniform(0,abs_list[1][1])
+    
+    for i in range(int(n/2)):
+        if (numbers[i] == tmp_[abs_list[0][0]]) or numbers[i] == (tmp_[abs_list[0][0]+1]):
+            numbers[i], numbers[n-i] = swap(numbers[i], numbers[n-i])
+
+    return {
+        'numbers' : numbers,
+        'threshold' : threshold
+    }",10000
+HumanEval/7,"from typing import List
+
+
+def filter_by_substring(strings: List[str], substring: str) -> List[str]:
+    """""" Filter an input list of strings only for ones that contain given substring
+    >>> filter_by_substring([], 'a')
+    []
+    >>> filter_by_substring(['abc', 'bacd', 'cde', 'array'], 'a')
+    ['abc', 'bacd', 'array']
+    """"""
+","from typing import List
+
+
+def filter_by_substring(strings: List[str], substring: str) -> List[str]:
+    """""" 筛选输入字符串列表中包含给定子串的字符串    >>> filter_by_substring([], 'a')
+    []
+    >>> filter_by_substring(['abc', 'bacd', 'cde', 'array'], 'a')
+    ['abc', 'bacd', 'array']
+    """"""
+","    return [x for x in strings if substring in x]
+","
+
+METADATA = {
+    'author': 'jt',
+    'dataset': 'test'
+}
+
+
+def check(candidate):
+    assert candidate([], 'john') == []
+    assert candidate(['xxx', 'asd', 'xxy', 'john doe', 'xxxAAA', 'xxx'], 'xxx') == ['xxx', 'xxxAAA', 'xxx']
+    assert candidate(['xxx', 'asd', 'aaaxxy', 'john doe', 'xxxAAA', 'xxx'], 'xx') == ['xxx', 'aaaxxy', 'xxxAAA', 'xxx']
+    assert candidate(['grunt', 'trumpet', 'prune', 'gruesome'], 'run') == ['grunt', 'prune']
+",filter_by_substring,"def rules(n):
+    import random
+    
+    base_str ='aaaaaabbbbbccccdddeeefghig'
+    length =len(base_str) -1
+    str_list = []
+    for i in range(n):
+        m = random.randint(3, 10)
+        random_str =''
+        for j in range(m):
+            random_str +=base_str[random.randint(0, length)]
+        str_list.append(random_str)
+    
+    if random.randint(0,1)==0:
+        tar = ''
+        for j in range(random.randint(1, 5)):
+            tar +=base_str[random.randint(0, length)]
+    else:
+        tar = str_list[random.randint(0, n-1)]
+        tar = tar[0:random.randint(1, len(tar)-1)]
+    
+    return {
+        'strings': str_list,
+        'substring': tar
+    }",50000
+HumanEval/16,"
+
+def count_distinct_characters(string: str) -> int:
+    """""" Given a string, find out how many distinct characters (regardless of case) does it consist of
+    >>> count_distinct_characters('xyzXYZ')
+    3
+    >>> count_distinct_characters('Jerry')
+    4
+    """"""
+","
+
+def count_distinct_characters(string: str) -> int:
+    """""" 给定一个字符串，找出它由多少个不同的字符（不论大小写）组成
+    >>> count_distinct_characters('xyzXYZ')
+    3
+    >>> count_distinct_characters('Jerry')
+    4
+    """"""
+","    return len(set(string.lower()))
+","
+
+METADATA = {
+    'author': 'jt',
+    'dataset': 'test'
+}
+
+
+def check(candidate):
+    assert candidate('') == 0
+    assert candidate('abcde') == 5
+    assert candidate('abcde' + 'cade' + 'CADE') == 5
+    assert candidate('aaaaAAAAaaaa') == 1
+    assert candidate('Jerry jERRY JeRRRY') == 5
+",count_distinct_characters,"def rules(n):
+    import random
+    
+    base_str ='ABCDEFGHIGKLMNOPQRSTUVWXYZabcdefghigklmnopqrstuvwxyz'
+    length =len(base_str) -1
+    random_str = ''
+    for i in range(n):
+        random_str +=base_str[random.randint(0, length)]
+    
+    return {
+        'string': random_str
+    }",100000
+HumanEval/18,"
+
+def how_many_times(string: str, substring: str) -> int:
+    """""" Find how many times a given substring can be found in the original string. Count overlaping cases.
+    >>> how_many_times('', 'a')
+    0
+    >>> how_many_times('aaa', 'a')
+    3
+    >>> how_many_times('aaaa', 'aa')
+    3
+    """"""
+","
+
+def how_many_times(string: str, substring: str) -> int:
+    """""" 查找给定子串在原始字符串中出现的次数。计算重叠次数?    >>> how_many_times('', 'a')
+    0
+    >>> how_many_times('aaa', 'a')
+    3
+    >>> how_many_times('aaaa', 'aa')
+    3
+    """"""
+","    times = 0
+
+    for i in range(len(string) - len(substring) + 1):
+        if string[i:i+len(substring)] == substring:
+            times += 1
+
+    return times
+","
+
+METADATA = {
+    'author': 'jt',
+    'dataset': 'test'
+}
+
+
+def check(candidate):
+    assert candidate('', 'x') == 0
+    assert candidate('xyxyxyx', 'x') == 4
+    assert candidate('cacacacac', 'cac') == 4
+    assert candidate('john doe', 'john') == 1
+",how_many_times,"def rules(n):
+    import random
+    
+    base_str ='aaabbccdefghigk'
+    length =len(base_str) -1
+    random_str = ''
+    for i in range(n):
+        random_str +=base_str[random.randint(0, length)]
+    
+    substring = ''
+    for i in range(random.randint(1, min(5,n))):
+        substring +=base_str[random.randint(0, length)]
+    
+    return {
+        'string': random_str,
+        'substring': substring
+    }",10000
+HumanEval/24,"
+
+def largest_divisor(n: int) -> int:
+    """""" For a given number n, find the largest number that divides n evenly, smaller than n
+    >>> largest_divisor(15)
+    5
+    """"""
+","
+
+def largest_divisor(n: int) -> int:
+    """""" 对于给定的数 n，找出能整除 n 且小于n 的最大的数    >>> largest_divisor(15)
+    5
+    """"""
+","    for i in reversed(range(n)):
+        if n % i == 0:
+            return i
+","
+
+METADATA = {
+    'author': 'jt',
+    'dataset': 'test'
+}
+
+
+def check(candidate):
+    assert candidate(3) == 1
+    assert candidate(7) == 1
+    assert candidate(10) == 5
+    assert candidate(100) == 50
+    assert candidate(49) == 7
+",largest_divisor,"def rules(n):
+    import random
+
+    res = random.randint(int(0.99*n), int(1.01*n))
+    
+    return {
+        'n': res
+    }",1000000
+HumanEval/25,"from typing import List
+
+
+def factorize(n: int) -> List[int]:
+    """""" Return list of prime factors of given integer in the order from smallest to largest.
+    Each of the factors should be listed number of times corresponding to how many times it appeares in factorization.
+    Input number should be equal to the product of all factors
+    >>> factorize(8)
+    [2, 2, 2]
+    >>> factorize(25)
+    [5, 5]
+    >>> factorize(70)
+    [2, 5, 7]
+    """"""
+","from typing import List
+
+
+def factorize(n: int) -> List[int]:
+    """""" 按从小到大的顺序返回给定整数的质因数列表    每个因数列出的次数应与它在因数分解中出现的次数相对应?    输入数字应等于所有因数的乘积
+    >>> factorize(8)
+    [2, 2, 2]
+    >>> factorize(25)
+    [5, 5]
+    >>> factorize(70)
+    [2, 5, 7]
+    """"""
+","    import math
+    fact = []
+    i = 2
+    while i <= int(math.sqrt(n) + 1):
+        if n % i == 0:
+            fact.append(i)
+            n //= i
+        else:
+            i += 1
+
+    if n > 1:
+        fact.append(n)
+    return fact
+","
+
+METADATA = {
+    'author': 'jt',
+    'dataset': 'test'
+}
+
+
+def check(candidate):
+    assert candidate(2) == [2]
+    assert candidate(4) == [2, 2]
+    assert candidate(8) == [2, 2, 2]
+    assert candidate(3 * 19) == [3, 19]
+    assert candidate(3 * 19 * 3 * 19) == [3, 3, 19, 19]
+    assert candidate(3 * 19 * 3 * 19 * 3 * 19) == [3, 3, 3, 19, 19, 19]
+    assert candidate(3 * 19 * 19 * 19) == [3, 19, 19, 19]
+    assert candidate(3 * 2 * 3) == [2, 3, 3]
+",factorize,"def rules(n):
+    import random
+
+    res = random.randint(int(0.99*n), int(1.01*n))
+    
+    return {
+        'n': res
+    }",1000000
+HumanEval/26,"from typing import List
+
+
+def remove_duplicates(numbers: List[int]) -> List[int]:
+    """""" From a list of integers, remove all elements that occur more than once.
+    Keep order of elements left the same as in the input.
+    >>> remove_duplicates([1, 2, 3, 2, 4])
+    [1, 3, 4]
+    """"""
+","from typing import List
+
+
+def remove_duplicates(numbers: List[int]) -> List[int]:
+    """""" 从整数列表中删除所有出现过一次以上的元素，   保持剩余元素的顺序与输入相同    >>> remove_duplicates([1, 2, 3, 2, 4])
+    [1, 3, 4]
+    """"""
+","    import collections
+    c = collections.Counter(numbers)
+    return [n for n in numbers if c[n] <= 1]
+","
+
+METADATA = {
+    'author': 'jt',
+    'dataset': 'test'
+}
+
+
+def check(candidate):
+    assert candidate([]) == []
+    assert candidate([1, 2, 3, 4]) == [1, 2, 3, 4]
+    assert candidate([1, 2, 3, 2, 4, 3, 5]) == [1, 4, 5]
+",remove_duplicates,"def rules(n):
+    import random
+
+    res= []
+
+    for i in range(n):
+        res.append(random.randint(0, min(0.6*n, 10000)))
+    
+    return {
+        'numbers': res
+    }",1000000
+HumanEval/31,"
+
+def is_prime(n):
+    """"""Return true if a given number is prime, and false otherwise.
+    >>> is_prime(6)
+    False
+    >>> is_prime(101)
+    True
+    >>> is_prime(11)
+    True
+    >>> is_prime(13441)
+    True
+    >>> is_prime(61)
+    True
+    >>> is_prime(4)
+    False
+    >>> is_prime(1)
+    False
+    """"""
+","
+
+def is_prime(n):
+    """"""如果给定的数字是质数，则返回 true，否则返回false   >>> is_prime(6)
+    False
+    >>> is_prime(101)
+    True
+    >>> is_prime(11)
+    True
+    >>> is_prime(13441)
+    True
+    >>> is_prime(61)
+    True
+    >>> is_prime(4)
+    False
+    >>> is_prime(1)
+    False
+    """"""
+","    if n < 2:
+        return False
+    for k in range(2, n - 1):
+        if n % k == 0:
+            return False
+    return True
+","
+
+METADATA = {}
+
+
+def check(candidate):
+    assert candidate(6) == False
+    assert candidate(101) == True
+    assert candidate(11) == True
+    assert candidate(13441) == True
+    assert candidate(61) == True
+    assert candidate(4) == False
+    assert candidate(1) == False
+    assert candidate(5) == True
+    assert candidate(11) == True
+    assert candidate(17) == True
+    assert candidate(5 * 17) == False
+    assert candidate(11 * 7) == False
+    assert candidate(13441 * 19) == False
+
+",is_prime,"def rules(n):
+    import random
+    def sieve_eratosthenes(N):
+        is_prime = [True] * (N + 1)
+        is_prime[0] = is_prime[1] = False
+        p = 2
+
+        while p * p <= N:
+            if is_prime[p]:
+                for i in range(p * p, N + 1, p):
+                    is_prime[i] = False
+            p += 1
+
+        primes = []
+        for i in range(N):
+            if i>2 and i>int(0.99*n) and i<int(1.01*n) and is_prime[i]==True:
+                primes.append(i)
+        return primes
+    N = random.randint(int(0.99*n), int(1.01*n))
+    pris = sieve_eratosthenes(N)
+    if random.randint(0,2)!=0 or len(pris)==0:
+        res=random.randint(int(0.99*n), int(1.01*n))
+    else:
+        res = pris[random.randint(0, len(pris)-1)]
+    
+    return {
+        'n': res
+    }",50000
+HumanEval/34,"
+
+def unique(l: list):
+    """"""Return sorted unique elements in a list
+    >>> unique([5, 3, 5, 2, 3, 3, 9, 0, 123])
+    [0, 2, 3, 5, 9, 123]
+    """"""
+","
+
+def unique(l: list):
+    """"""返回列表中经过排序后的独特元素?    >>> unique([5, 3, 5, 2, 3, 3, 9, 0, 123])
+    [0, 2, 3, 5, 9, 123]
+    """"""
+","    return sorted(list(set(l)))
+","
+
+METADATA = {}
+
+
+def check(candidate):
+    assert candidate([5, 3, 5, 2, 3, 3, 9, 0, 123]) == [0, 2, 3, 5, 9, 123]
+
+",unique,"def rules(n):
+    import random
+
+    res= []
+
+    for i in range(n):
+        res.append(random.randint(0, min(0.6*n, 2000)))
+    
+    return {
+        'numbers': res
+    }",30000
+HumanEval/35,"
+
+def max_element(l: list):
+    """"""Return maximum element in the list.
+    >>> max_element([1, 2, 3])
+    3
+    >>> max_element([5, 3, -5, 2, -3, 3, 9, 0, 123, 1, -10])
+    123
+    """"""
+","
+
+def max_element(l: list):
+    """"""返回列表中的最大元素    >>> max_element([1, 2, 3])
+    3
+    >>> max_element([5, 3, -5, 2, -3, 3, 9, 0, 123, 1, -10])
+    123
+    """"""
+","    m = l[0]
+    for e in l:
+        if e > m:
+            m = e
+    return m
+","
+
+METADATA = {}
+
+
+def check(candidate):
+    assert candidate([1, 2, 3]) == 3
+    assert candidate([5, 3, -5, 2, -3, 3, 9, 0, 124, 1, -10]) == 124
+",max_element,"def rules(n):
+    import random
+    res= []
+    for i in range(n):
+        if random.randint(0,1)==0:
+            flag=-1
+        else:
+            flag=1
+        res.append(random.randint(0, min(0.6*n, 2000))*flag)
+    return {
+        'l': res
+    }",30000
+HumanEval/36,"
+
+def fizz_buzz(n: int):
+    """"""Return the number of times the digit 7 appears in integers less than n which are divisible by 11 or 13.
+    >>> fizz_buzz(50)
+    0
+    >>> fizz_buzz(78)
+    2
+    >>> fizz_buzz(79)
+    3
+    """"""
+","
+
+def fizz_buzz(n: int):
+    """"""返回在能同时被11 和13 整除的小于n 的整数中，数字7 出现的次数    >>> fizz_buzz(50)
+    0
+    >>> fizz_buzz(78)
+    2
+    >>> fizz_buzz(79)
+    3
+    """"""
+","    ns = []
+    for i in range(n):
+        if i % 11 == 0 or i % 13 == 0:
+            ns.append(i)
+    s = ''.join(list(map(str, ns)))
+    ans = 0
+    for c in s:
+        ans += (c == '7')
+    return ans
+","
+
+METADATA = {}
+
+
+def check(candidate):
+    assert candidate(50) == 0
+    assert candidate(78) == 2
+    assert candidate(79) == 3
+    assert candidate(100) == 3
+    assert candidate(200) == 6
+    assert candidate(4000) == 192
+    assert candidate(10000) == 639
+    assert candidate(100000) == 8026
+
+",fizz_buzz,"def rules(n):
+    import random
+
+    res = random.randint(int(0.99*n), int(1.01*n))
+    
+    return {
+        'n': res
+    }",1000000
+HumanEval/43,"
+
+def pairs_sum_to_zero(l):
+    """"""
+    pairs_sum_to_zero takes a list of integers as an input.
+    it returns True if there are two distinct elements in the list that
+    sum to zero, and False otherwise.
+    >>> pairs_sum_to_zero([1, 3, 5, 0])
+    False
+    >>> pairs_sum_to_zero([1, 3, -2, 1])
+    False
+    >>> pairs_sum_to_zero([1, 2, 3, 7])
+    False
+    >>> pairs_sum_to_zero([2, 4, -5, 3, 5, 7])
+    True
+    >>> pairs_sum_to_zero([1])
+    False
+    """"""
+","
+
+def pairs_sum_to_zero(l):
+    """"""
+    pairs_sum_to_zero 将整数列表作为输入，如果列表中有两个不同元素加起来的和为零，
+    则返回True，否则返回False    >>> pairs_sum_to_zero([1, 3, 5, 0])
+    False
+    >>> pairs_sum_to_zero([1, 3, -2, 1])
+    False
+    >>> pairs_sum_to_zero([1, 2, 3, 7])
+    False
+    >>> pairs_sum_to_zero([2, 4, -5, 3, 5, 7])
+    True
+    >>> pairs_sum_to_zero([1])
+    False
+    """"""
+","    for i, l1 in enumerate(l):
+        for j in range(i + 1, len(l)):
+            if l1 + l[j] == 0:
+                return True
+    return False
+","
+
+METADATA = {}
+
+
+def check(candidate):
+    assert candidate([1, 3, 5, 0]) == False
+    assert candidate([1, 3, -2, 1]) == False
+    assert candidate([1, 2, 3, 7]) == False
+    assert candidate([2, 4, -5, 3, 5, 7]) == True
+    assert candidate([1]) == False
+
+    assert candidate([-3, 9, -1, 3, 2, 30]) == True
+    assert candidate([-3, 9, -1, 3, 2, 31]) == True
+    assert candidate([-3, 9, -1, 4, 2, 30]) == False
+    assert candidate([-3, 9, -1, 4, 2, 31]) == False
+
+",pairs_sum_to_zero,"def rules(n):
+    import random
+
+    res= []
+
+    for i in range(n):
+        if random.randint(0,1)==0:
+            flag=-1
+        else:
+            flag=1
+        
+        res.append(random.randint(0, max(0.5*n, 200))*flag)
+    
+    return {
+        'l': res
+    }",30000
+HumanEval/52,"
+
+def below_threshold(l: list, t: int):
+    """"""Return True if all numbers in the list l are below threshold t.
+    >>> below_threshold([1, 2, 4, 10], 100)
+    True
+    >>> below_threshold([1, 20, 4, 10], 5)
+    False
+    """"""
+","
+
+def below_threshold(l: list, t: int):
+    """"""如果列表 l 中的所有数字都低于阈阈值t，则返回 True   >>> below_threshold([1, 2, 4, 10], 100)
+    True
+    >>> below_threshold([1, 20, 4, 10], 5)
+    False
+    """"""
+","    for e in l:
+        if e >= t:
+            return False
+    return True
+","
+
+METADATA = {}
+
+
+def check(candidate):
+    assert candidate([1, 2, 4, 10], 100)
+    assert not candidate([1, 20, 4, 10], 5)
+    assert candidate([1, 20, 4, 10], 21)
+    assert candidate([1, 20, 4, 10], 22)
+    assert candidate([1, 8, 4, 10], 11)
+    assert not candidate([1, 8, 4, 10], 10)
+
+",below_threshold,"def rules(n):
+    import random
+
+    res= []
+
+    for i in range(n):
+        if random.randint(0,1)==0:
+            flag=-1
+        else:
+            flag=1
+        
+        res.append(random.randint(0, 0.7*n)*flag)
+    
+    t = random.randint(0, n-1)
+    
+    return {
+        'l': res,
+        't': t
+    }",100000
+HumanEval/54,"
+
+def same_chars(s0: str, s1: str):
+    """"""
+    Check if two words have the same characters.
+    >>> same_chars('eabcdzzzz', 'dddzzzzzzzddeddabc')
+    True
+    >>> same_chars('abcd', 'dddddddabc')
+    True
+    >>> same_chars('dddddddabc', 'abcd')
+    True
+    >>> same_chars('eabcd', 'dddddddabc')
+    False
+    >>> same_chars('abcd', 'dddddddabce')
+    False
+    >>> same_chars('eabcdzzzz', 'dddzzzzzzzddddabc')
+    False
+    """"""
+","
+
+def same_chars(s0: str, s1: str):
+    """"""
+    检查两个单词是否包含相同的字符    >>> same_chars('eabcdzzzz', 'dddzzzzzzzddeddabc')
+    True
+    >>> same_chars('abcd', 'dddddddabc')
+    True
+    >>> same_chars('dddddddabc', 'abcd')
+    True
+    >>> same_chars('eabcd', 'dddddddabc')
+    False
+    >>> same_chars('abcd', 'dddddddabce')
+    False
+    >>> same_chars('eabcdzzzz', 'dddzzzzzzzddddabc')
+    False
+    """"""
+","    return set(s0) == set(s1)
+","
+
+METADATA = {}
+
+
+def check(candidate):
+    assert candidate('eabcdzzzz', 'dddzzzzzzzddeddabc') == True
+    assert candidate('abcd', 'dddddddabc') == True
+    assert candidate('dddddddabc', 'abcd') == True
+    assert candidate('eabcd', 'dddddddabc') == False
+    assert candidate('abcd', 'dddddddabcf') == False
+    assert candidate('eabcdzzzz', 'dddzzzzzzzddddabc') == False
+    assert candidate('aabb', 'aaccc') == False
+
+",same_chars,"def rules(n):
+    import random
+    
+    base_str ='ZXCVBNMASDFGHJKLPOIUYTRREWQ1234567890qwertyuiopasdfghjklmnbvcxz'
+    length =len(base_str) -1
+    s1 = ''
+    for i in range(n):
+        s1 +=base_str[random.randint(0, length)]
+    
+    s2 = ''
+    for i in range(n):
+        s2 +=base_str[random.randint(0, length)]
+    
+    return {
+        's0': s1,
+        's1': s2
+    }",30000
+HumanEval/58,"
+
+def common(l1: list, l2: list):
+    """"""Return sorted unique common elements for two lists.
+    >>> common([1, 4, 3, 34, 653, 2, 5], [5, 7, 1, 5, 9, 653, 121])
+    [1, 5, 653]
+    >>> common([5, 3, 2, 8], [3, 2])
+    [2, 3]
+
+    """"""
+","
+
+def common(l1: list, l2: list):
+    """"""返回两个列表中的共同出现过的元素，返回列表要求排过序且每个元素只出现一次    >>> common([1, 4, 3, 34, 653, 2, 5], [5, 7, 1, 5, 9, 653, 121])
+    [1, 5, 653]
+    >>> common([5, 3, 2, 8], [3, 2])
+    [2, 3]
+
+    """"""
+","    ret = set()
+    for e1 in l1:
+        for e2 in l2:
+            if e1 == e2:
+                ret.add(e1)
+    return sorted(list(ret))
+","
+
+METADATA = {}
+
+
+def check(candidate):
+    assert candidate([1, 4, 3, 34, 653, 2, 5], [5, 7, 1, 5, 9, 653, 121]) == [1, 5, 653]
+    assert candidate([5, 3, 2, 8], [3, 2]) == [2, 3]
+    assert candidate([4, 3, 2, 8], [3, 2, 4]) == [2, 3, 4]
+    assert candidate([4, 3, 2, 8], []) == []
+
+",common,"def rules(n):
+    import random
+    
+    l1=[]
+    l2=[]
+    for i in range(n):
+        l1.append(random.randint(0, n))
+        l2.append(random.randint(0, n))
+    
+    return {
+        'l1': l1,
+        's2': l2
+    }",30000
+HumanEval/59,"
+
+def largest_prime_factor(n: int):
+    """"""Return the largest prime factor of n. Assume n > 1 and is not a prime.
+    >>> largest_prime_factor(13195)
+    29
+    >>> largest_prime_factor(2048)
+    2
+    """"""
+","
+
+def largest_prime_factor(n: int):
+    """"""返回 n 的最大质因数。假设n > 1 且不是质数   >>> largest_prime_factor(13195)
+    29
+    >>> largest_prime_factor(2048)
+    2
+    """"""
+","    def is_prime(k):
+        if k < 2:
+            return False
+        for i in range(2, k - 1):
+            if k % i == 0:
+                return False
+        return True
+    largest = 1
+    for j in range(2, n + 1):
+        if n % j == 0 and is_prime(j):
+            largest = max(largest, j)
+    return largest
+","
+
+METADATA = {}
+
+
+def check(candidate):
+    assert candidate(15) == 5
+    assert candidate(27) == 3
+    assert candidate(63) == 7
+    assert candidate(330) == 11
+    assert candidate(13195) == 29
+
+",largest_prime_factor,"def rules(n):
+    import random
+
+    res = random.randint(int(0.99*n), int(1.01*n))
+    
+    return {
+        'n': res
+    }",1000000
+HumanEval/60,"
+
+def sum_to_n(n: int):
+    """"""sum_to_n is a function that sums numbers from 1 to n.
+    >>> sum_to_n(30)
+    465
+    >>> sum_to_n(100)
+    5050
+    >>> sum_to_n(5)
+    15
+    >>> sum_to_n(10)
+    55
+    >>> sum_to_n(1)
+    1
+    """"""
+","
+
+def sum_to_n(n: int):
+    """"""sum_to_n 计算从1到n的数字的和.   >>> sum_to_n(30)
+    465
+    >>> sum_to_n(100)
+    5050
+    >>> sum_to_n(5)
+    15
+    >>> sum_to_n(10)
+    55
+    >>> sum_to_n(1)
+    1
+    """"""
+","    return sum(range(n + 1))
+","
+
+METADATA = {}
+
+
+def check(candidate):
+    assert candidate(1) == 1
+    assert candidate(6) == 21
+    assert candidate(11) == 66
+    assert candidate(30) == 465
+    assert candidate(100) == 5050
+
+",sum_to_n,"def rules(n):
+    import random
+
+    res = random.randint(int(0.99*n), int(1.01*n))
+    
+    return {
+        'n': res
+    }",10000000
+HumanEval/70,"
+def strange_sort_list(lst):
+    '''
+    Given list of integers, return list in strange order.
+    Strange sorting, is when you start with the minimum value,
+    then maximum of the remaining integers, then minimum and so on.
+
+    Examples:
+    strange_sort_list([1, 2, 3, 4]) == [1, 4, 2, 3]
+    strange_sort_list([5, 5, 5, 5]) == [5, 5, 5, 5]
+    strange_sort_list([]) == []
+    '''
+","
+def strange_sort_list(lst):
+    '''
+    给定整数列表，按奇异排序返回列表，奇异排序是指从最小值开始，然后是其余整数的最大值，接着是最小值，以此类推。
+    示例   strange_sort_list([1, 2, 3, 4]) == [1, 4, 2, 3]
+    strange_sort_list([5, 5, 5, 5]) == [5, 5, 5, 5]
+    strange_sort_list([]) == []
+    '''
+","    res, switch = [], True
+    while lst:
+        res.append(min(lst) if switch else max(lst))
+        lst.remove(res[-1])
+        switch = not switch
+    return res
+","def check(candidate):
+
+    # Check some simple cases
+    assert candidate([1, 2, 3, 4]) == [1, 4, 2, 3]
+    assert candidate([5, 6, 7, 8, 9]) == [5, 9, 6, 8, 7]
+    assert candidate([1, 2, 3, 4, 5]) == [1, 5, 2, 4, 3]
+    assert candidate([5, 6, 7, 8, 9, 1]) == [1, 9, 5, 8, 6, 7]
+    assert candidate([5, 5, 5, 5]) == [5, 5, 5, 5]
+    assert candidate([]) == []
+    assert candidate([1,2,3,4,5,6,7,8]) == [1, 8, 2, 7, 3, 6, 4, 5]
+    assert candidate([0,2,2,2,5,5,-5,-5]) == [-5, 5, -5, 5, 0, 2, 2, 2]
+    assert candidate([111111]) == [111111]
+
+    # Check some edge cases that are easy to work out by hand.
+    assert True
+
+",strange_sort_list,"def rules(n):
+    import random
+    res= []
+    for i in range(n):
+        if random.randint(0,1)==0:
+            flag=-1
+        else:
+            flag=1
+        
+        res.append(random.randint(0, 0.7*n)*flag)
+    
+    return {
+        'lst':res
+    }",100000
+HumanEval/73,"
+def smallest_change(arr):
+    """"""
+    Given an array arr of integers, find the minimum number of elements that
+    need to be changed to make the array palindromic. A palindromic array is an array that
+    is read the same backwards and forwards. In one change, you can change one element to any other element.
+
+    For example:
+    smallest_change([1,2,3,5,4,7,9,6]) == 4
+    smallest_change([1, 2, 3, 4, 3, 2, 2]) == 1
+    smallest_change([1, 2, 3, 2, 1]) == 0
+    """"""
+","
+def smallest_change(arr):
+    """"""
+    给定一个由整数组成的数组arr，求使该数组成为回文数组所需改变的最少元素个数。回文数组是指从前向后读和从后向前读都相同的数组。在一次改变中，你可以将一个元素改变为任何其他元素。
+    For example:
+    smallest_change([1,2,3,5,4,7,9,6]) == 4
+    smallest_change([1, 2, 3, 4, 3, 2, 2]) == 1
+    smallest_change([1, 2, 3, 2, 1]) == 0
+    """"""
+","    ans = 0
+    for i in range(len(arr) // 2):
+        if arr[i] != arr[len(arr) - i - 1]:
+            ans += 1
+    return ans
+","def check(candidate):
+
+    # Check some simple cases
+    assert candidate([1,2,3,5,4,7,9,6]) == 4
+    assert candidate([1, 2, 3, 4, 3, 2, 2]) == 1
+    assert candidate([1, 4, 2]) == 1
+    assert candidate([1, 4, 4, 2]) == 1
+
+    # Check some edge cases that are easy to work out by hand.
+    assert candidate([1, 2, 3, 2, 1]) == 0
+    assert candidate([3, 1, 1, 3]) == 0
+    assert candidate([1]) == 0
+    assert candidate([0, 1]) == 1
+
+",smallest_change,"def rules(n):
+    import random
+    import numpy
+    res= []
+    for i in range(n):
+        res.append(random.randint(0, int(0.1*n)))
+    
+    return {
+        'arr': res
+    }",100000
+HumanEval/82,"
+def prime_length(string):
+    """"""Write a function that takes a string and returns True if the string
+    length is a prime number or False otherwise
+    Examples
+    prime_length('Hello') == True
+    prime_length('abcdcba') == True
+    prime_length('kittens') == True
+    prime_length('orange') == False
+    """"""
+","
+def prime_length(string):
+    """"""编写一个函数，接收一个字符串，如果字符串长度是质数，则返回True，否则返回False    示例：
+    prime_length('Hello') == True
+    prime_length('abcdcba') == True
+    prime_length('kittens') == True
+    prime_length('orange') == False
+    """"""
+","    l = len(string)
+    if l == 0 or l == 1:
+        return False
+    for i in range(2, l):
+        if l % i == 0:
+            return False
+    return True
+","def check(candidate):
+
+    # Check some simple cases
+    assert candidate('Hello') == True
+    assert candidate('abcdcba') == True
+    assert candidate('kittens') == True
+    assert candidate('orange') == False
+    assert candidate('wow') == True
+    assert candidate('world') == True
+    assert candidate('MadaM') == True
+    assert candidate('Wow') == True
+    assert candidate('') == False
+    assert candidate('HI') == True
+    assert candidate('go') == True
+    assert candidate('gogo') == False
+    assert candidate('aaaaaaaaaaaaaaa') == False
+
+    # Check some edge cases that are easy to work out by hand.
+    assert candidate('Madam') == True
+    assert candidate('M') == False
+    assert candidate('0') == False
+
+",prime_length,"def rules(n):
+    import random
+    
+    base_str ='ZXCVBNMASDF'
+    length =len(base_str) -1
+    s1 = ''
+    for i in range(n):
+        s1 +=base_str[random.randint(0, length)]
+    return {
+        'string':s1
+    }",1000000
+HumanEval/90,"
+def next_smallest(lst):
+    """"""
+    You are given a list of integers.
+    Write a function next_smallest() that returns the 2nd smallest element of the list.
+    Return None if there is no such element.
+    
+    next_smallest([1, 2, 3, 4, 5]) == 2
+    next_smallest([5, 1, 4, 3, 2]) == 2
+    next_smallest([]) == None
+    next_smallest([1, 1]) == None
+    """"""
+","
+def next_smallest(lst):
+    """"""
+    给你一个整数列表，请编写函数next_smallest()，返回列表中第二小的元素。 如果没有这样的元素，则返回None。    
+    next_smallest([1, 2, 3, 4, 5]) == 2
+    next_smallest([5, 1, 4, 3, 2]) == 2
+    next_smallest([]) == None
+    next_smallest([1, 1]) == None
+    """"""
+","    lst = sorted(set(lst))
+    return None if len(lst) < 2 else lst[1]
+","def check(candidate):
+
+    # Check some simple cases
+    assert candidate([1, 2, 3, 4, 5]) == 2
+    assert candidate([5, 1, 4, 3, 2]) == 2
+    assert candidate([]) == None
+    assert candidate([1, 1]) == None
+    assert candidate([1,1,1,1,0]) == 1
+    assert candidate([1, 0**0]) == None
+    assert candidate([-35, 34, 12, -45]) == -35
+
+    # Check some edge cases that are easy to work out by hand.
+    assert True
+
+",next_smallest,"def rules(n):
+    import random
+    lst = []
+    for i in range(n):
+        lst.append(random.randint(0, n))
+    return {
+        'lst':lst
+    }",10000
+HumanEval/94,"
+
+def skjkasdkd(lst):
+    """"""You are given a list of integers.
+    You need to find the largest prime value and return the sum of its digits.
+
+    Examples:
+    For lst = [0,3,2,1,3,5,7,4,5,5,5,2,181,32,4,32,3,2,32,324,4,3] the output should be 10
+    For lst = [1,0,1,8,2,4597,2,1,3,40,1,2,1,2,4,2,5,1] the output should be 25
+    For lst = [1,3,1,32,5107,34,83278,109,163,23,2323,32,30,1,9,3] the output should be 13
+    For lst = [0,724,32,71,99,32,6,0,5,91,83,0,5,6] the output should be 11
+    For lst = [0,81,12,3,1,21] the output should be 3
+    For lst = [0,8,1,2,1,7] the output should be 7
+    """"""
+","
+
+def skjkasdkd(lst):
+    """"""给您一个整数列表，  您需要找出最大的质数值并返回其位数之和。
+    示例如下：   对于lst = [0,3,2,1,3,5,7,4,5,5,5,2,181,32,4,32,3,2,32,324,4,3] 输出应为 10
+    对于 lst = [1,0,1,8,2,4597,2,1,3,40,1,2,1,2,4,2,5,1] 输出应为 25
+    对于 lst = [1,3,1,32,5107,34,83278,109,163,23,2323,32,30,1,9,3]输出应为 13
+    对于 lst = [0,724,32,71,99,32,6,0,5,91,83,0,5,6] 输出应为11
+    对于 lst = [0,81,12,3,1,21] 输出应为 3
+    对于 lst = [0,8,1,2,1,7] 输出应为 7
+    """"""
+","    def isPrime(n):
+        for i in range(2,int(n**0.5)+1):
+            if n%i==0:
+                return False
+
+        return True
+    maxx = 0
+    i = 0
+    while i < len(lst):
+        if(lst[i] > maxx and isPrime(lst[i])):
+            maxx = lst[i]
+        i+=1
+    result = sum(int(digit) for digit in str(maxx))
+    return result
+
+","def check(candidate):
+
+    # Check some simple cases
+    assert candidate([0,3,2,1,3,5,7,4,5,5,5,2,181,32,4,32,3,2,32,324,4,3]) == 10, ""This prints if this assert fails 1 (good for debugging!)""
+
+    # Check some edge cases that are easy to work out by hand.
+    assert candidate([1,0,1,8,2,4597,2,1,3,40,1,2,1,2,4,2,5,1]) == 25, ""This prints if this assert fails 2 (also good for debugging!)""
+
+    # Check some edge cases that are easy to work out by hand.
+    assert candidate([1,3,1,32,5107,34,83278,109,163,23,2323,32,30,1,9,3]) == 13, ""This prints if this assert fails 3 (also good for debugging!)""
+
+    # Check some edge cases that are easy to work out by hand.
+    assert candidate([0,724,32,71,99,32,6,0,5,91,83,0,5,6]) == 11, ""This prints if this assert fails 4 (also good for debugging!)""
+    
+    # Check some edge cases that are easy to work out by hand.
+    assert candidate([0,81,12,3,1,21]) == 3, ""This prints if this assert fails 5 (also good for debugging!)""
+
+    # Check some edge cases that are easy to work out by hand.
+    assert candidate([0,8,1,2,1,7]) == 7, ""This prints if this assert fails 6 (also good for debugging!)""
+
+    assert candidate([8191]) == 19, ""This prints if this assert fails 7 (also good for debugging!)""
+    assert candidate([8191, 123456, 127, 7]) == 19, ""This prints if this assert fails 8 (also good for debugging!)""
+    assert candidate([127, 97, 8192]) == 10, ""This prints if this assert fails 9 (also good for debugging!)""
+",skjkasdkd,"def rules(n):
+    import random
+    lst = []
+    def sieve_eratosthenes(n):
+        is_prime = [True] * (n + 1)
+        is_prime[0] = is_prime[1] = False
+        p = 2
+
+        while p * p <= n:
+            if is_prime[p]:
+                for i in range(p * p, n + 1, p):
+                    is_prime[i] = False
+            p += 1
+
+        primes = [i for i, prime in enumerate(is_prime) if prime]
+        return primes
+    pris = sieve_eratosthenes(n)
+    for i in range(n):
+        if random.randint(0,1)==0:
+            lst.append(random.randint(0, n))
+        else:
+            lst.append(pris[random.randint(0, len(pris)-1)]
+    return {
+        'lst':lst
+    }",50000
+HumanEval/103,"
+def rounded_avg(n, m):
+    """"""You are given two positive integers n and m, and your task is to compute the
+    average of the integers from n through m (including n and m). 
+    Round the answer to the nearest integer and convert that to binary.
+    If n is greater than m, return -1.
+    Example:
+    rounded_avg(1, 5) => ""0b11""
+    rounded_avg(7, 5) => -1
+    rounded_avg(10, 20) => ""0b1111""
+    rounded_avg(20, 33) => ""0b11010""
+    """"""
+","
+def rounded_avg(n, m):
+    """"""给您两个正整数n和m，您的任务是计算从n到m(包括n和m)的整数的平均值。 将答案四舍五入为最接近的整数，并将其转换为二进制。 如果n大于m，则返回-1。   Example:
+    rounded_avg(1, 5) => ""0b11""
+    rounded_avg(7, 5) => -1
+    rounded_avg(10, 20) => ""0b1111""
+    rounded_avg(20, 33) => ""0b11010""
+    """"""
+","    if m < n:
+        return -1
+    summation = 0
+    for i in range(n, m+1):
+        summation += i
+    return bin(round(summation/(m - n + 1)))
+","def check(candidate):
+
+    # Check some simple cases
+    assert candidate(1, 5) == ""0b11""
+    assert candidate(7, 13) == ""0b1010""
+    assert candidate(964,977) == ""0b1111001010""
+    assert candidate(996,997) == ""0b1111100100""
+    assert candidate(560,851) == ""0b1011000010""
+    assert candidate(185,546) == ""0b101101110""
+    assert candidate(362,496) == ""0b110101101""
+    assert candidate(350,902) == ""0b1001110010""
+    assert candidate(197,233) == ""0b11010111""
+
+
+    # Check some edge cases that are easy to work out by hand.
+    assert candidate(7, 5) == -1
+    assert candidate(5, 1) == -1
+    assert candidate(5, 5) == ""0b101""
+
+",rounded_avg,"def rules(n):
+    m = 1
+    return {
+        'n': 1,
+        'm': n
+    }",100000
+HumanEval/109,"
+def move_one_ball(arr):
+    """"""We have an array 'arr' of N integers arr[1], arr[2], ..., arr[N].The
+    numbers in the array will be randomly ordered. Your task is to determine if
+    it is possible to get an array sorted in non-decreasing order by performing 
+    the following operation on the given array:
+        You are allowed to perform right shift operation any number of times.
+    
+    One right shift operation means shifting all elements of the array by one
+    position in the right direction. The last element of the array will be moved to
+    the starting position in the array i.e. 0th index. 
+
+    If it is possible to obtain the sorted array by performing the above operation
+    then return True else return False.
+    If the given array is empty then return True.
+
+    Note: The given list is guaranteed to have unique elements.
+
+    For Example:
+    
+    move_one_ball([3, 4, 5, 1, 2])==>True
+    Explanation: By performin 2 right shift operations, non-decreasing order can
+                 be achieved for the given array.
+    move_one_ball([3, 5, 4, 1, 2])==>False
+    Explanation:It is not possible to get non-decreasing order for the given
+                array by performing any number of right shift operations.
+                
+    """"""
+","
+def move_one_ball(arr):
+    """"""我们有一个由N个整数arr[1]，arr[2]..，arr[N]组成的数组‘arr’。数组中的数字将被随机排序。您的任务是确定是否可以通过对给定的数组执行以下操作来按非降序对数组进行排序：允许您执行任意次数的右移位操作。    一次右移操作意味着将数组的所有元素在正确方向上移动一个位置。数组的最后一个元素将移动到数组中的起始位置，即第0个索引。如果可以通过执行上述操作获得非降序的数组，则返回True，否则返回False，    如果给定数组为空，则返回True。    注意：给定的列表保证具有唯一的元素。
+    For Example:
+    
+    move_one_ball([3, 4, 5, 1, 2])==>True
+    解释: 通过执行两次正确的右移位操作，可以实现非降序排列。   move_one_ball([3, 5, 4, 1, 2])==>False
+    Explanation:无论如何对给定的数组进行右移位操作，都无法实现非降序排列。          
+    """"""
+","    if len(arr)==0:
+      return True
+    sorted_array=sorted(arr)
+    my_arr=[]
+    
+    min_value=min(arr)
+    min_index=arr.index(min_value)
+    my_arr=arr[min_index:]+arr[0:min_index]
+    for i in range(len(arr)):
+      if my_arr[i]!=sorted_array[i]:
+        return False
+    return True
+","def check(candidate):
+
+    # Check some simple cases
+    assert candidate([3, 4, 5, 1, 2])==True, ""This prints if this assert fails 1 (good for debugging!)""
+    assert candidate([3, 5, 10, 1, 2])==True
+    assert candidate([4, 3, 1, 2])==False
+    # Check some edge cases that are easy to work out by hand.
+    assert candidate([3, 5, 4, 1, 2])==False, ""This prints if this assert fails 2 (also good for debugging!)""
+    assert candidate([])==True
+",move_one_ball,"def rules(n):
+    import random
+    import numpy
+    res= []
+    for i in range(n):
+        res.append(i)
+    random.shuffle(res)
+    res = numpy.array(res)
+    
+    return {
+        'arr': res
+    }",30000
+HumanEval/114,"
+def minSubArraySum(nums):
+    """"""
+    Given an array of integers nums, find the minimum sum of any non-empty sub-array
+    of nums.
+    Example
+    minSubArraySum([2, 3, 4, 1, 2, 4]) == 1
+    minSubArraySum([-1, -2, -3]) == -6
+    """"""
+","
+def minSubArraySum(nums):
+    """"""
+    给定一个整数数组，找到具有最小总和的任意一个非空子数组，输出最小总和值。示例如下：
+    minSubArraySum([2, 3, 4, 1, 2, 4]) == 1
+    minSubArraySum([-1, -2, -3]) == -6
+    """"""
+","    max_sum = 0
+    s = 0
+    for num in nums:
+        s += -num
+        if (s < 0):
+            s = 0
+        max_sum = max(s, max_sum)
+    if max_sum == 0:
+        max_sum = max(-i for i in nums)
+    min_sum = -max_sum
+    return min_sum
+","def check(candidate):
+
+    # Check some simple cases
+    assert candidate([2, 3, 4, 1, 2, 4]) == 1, ""This prints if this assert fails 1 (good for debugging!)""
+    assert candidate([-1, -2, -3]) == -6
+    assert candidate([-1, -2, -3, 2, -10]) == -14
+    assert candidate([-9999999999999999]) == -9999999999999999
+    assert candidate([0, 10, 20, 1000000]) == 0
+    assert candidate([-1, -2, -3, 10, -5]) == -6
+    assert candidate([100, -1, -2, -3, 10, -5]) == -6
+    assert candidate([10, 11, 13, 8, 3, 4]) == 3
+    assert candidate([100, -33, 32, -1, 0, -2]) == -33
+
+    # Check some edge cases that are easy to work out by hand.
+    assert candidate([-10]) == -10, ""This prints if this assert fails 2 (also good for debugging!)""
+    assert candidate([7]) == 7
+    assert candidate([1, -1]) == -1
+",minSubArraySum,"def rules(n):
+    import random
+    res= []
+    for i in range(n):
+        if random.randint(0,2)==0:
+            flag=-1
+        else:
+            flag=1
+        res.append(random.randint(0, min(0.6*n, 200))*flag)
+    return {
+        'nums': res
+    }",30000
+MBPP/12,"from typing import List
+def sort_matrix(M: List[float]):
+    '''
+    Write a function to sort a given matrix M in ascending order according to the sum of its rows.
+    '''","from typing import List
+def sort_matrix(M: List[float]):
+    '''
+    给定一个矩阵M，编写一个函数，将其按行求和结果的升序进行排序。
+    '''","    result = sorted(M, key=sum) 
+    return result","def check(candidate):
+    assert candidate([[1, 2, 3], [2, 4, 5], [1, 1, 1]])==[[1, 1, 1], [1, 2, 3], [2, 4, 5]]
+    assert candidate([[1, 2, 3], [-2, 4, -5], [1, -1, 1]])==[[-2, 4, -5], [1, -1, 1], [1, 2, 3]]
+    assert candidate([[5,8,9],[6,4,3],[2,1,4]])==[[2, 1, 4], [6, 4, 3], [5, 8, 9]]",sort_matrix,"def rules(n):
+    import random
+    M = [[random.randint(-n,n) for i in range(n)] for j in range(n)]
+    return {
+        'M':M
+    }",1000
+MBPP/24,"def binary_to_decimal(binum): 
+    '''
+    Write a function to convert the given binary number to its decimal equivalent.
+    >>> binary_to_decimal(1001)
+    9
+    >>> binary_to_decimal(1010)
+    10
+    '''","def binary_to_decimal(binum): 
+    '''
+    将给定的二进制数转化为十进制数。
+    >>> binary_to_decimal(1001)
+    9
+    >>> binary_to_decimal(1010)
+    10
+    '''","    binary1 = binum 
+    decimal, i, n = 0, 0, 0
+    while(binum != 0): 
+        dec = binum % 10 
+        decimal = decimal + dec * pow(2, i) 
+        binum = binum//10 
+        i += 1 
+    return (decimal)","def check(candidate):
+    assert candidate(100) == 4
+    assert candidate(1011) == 11
+    assert candidate(1101101) == 109",binary_to_decimal,"def rules(n):
+    import random
+    bi = random.randint(int(0.99*n), int(1.01*n))
+    return {
+        'binum': bi
+    }",100000000
+MBPP/27,"import re 
+def remove(strlist):
+    '''
+    Write a python function to remove all digits from a list of strings.
+    >>> remove(['abc123', 'def456', 'ghi789'])
+    ['abc', 'def', 'ghi']
+    >>> remove(['abc123xyz', 'define456', '789ghi'])
+    ['abcxyz', 'define', 'ghi']
+    '''","import re 
+def remove(strlist):
+    '''
+    给定一个字符串列表strlist，编写一个函数，将每个字符串中的数字全部删除。
+    >>> remove(['abc123', 'def456', 'ghi789'])
+    ['abc', 'def', 'ghi']
+    >>> remove(['abc123xyz', 'define456', '789ghi'])
+    ['abcxyz', 'define', 'ghi']
+    '''","    pattern = '[0-9]' 
+    strlist = [re.sub(pattern, '', i) for i in strlist] 
+    return strlist","def check(candidate):
+    assert candidate(['4words', '3letters', '4digits']) == ['words', 'letters', 'digits']
+    assert candidate(['28Jan','12Jan','11Jan']) == ['Jan','Jan','Jan']
+    assert candidate(['wonder1','wonder2','wonder3']) == ['wonder','wonder','wonder']",remove,"def rules(n):
+    import random
+    num = '0123456789'
+    char = 'abcdefghijklmnopqrstuvwxyz'
+    strlist = []
+    for i in range(n):
+        strs = ''
+        for j in range(10):
+            strs+=random.choice(char)+random.choice(num)
+        strlist.append(strs)
+
+    return {
+        'strlist': strlist
+    }",10000
+MBPP/42,"def find_Sum(arr): 
+    '''
+    Write a python function to find the sum of repeated elements in a given array.  
+    If one element is repeated more than once, the sum should be counted for multiple times.
+    >>> find_Sum([1,1,2])
+    2
+    >>> find_Sum([4, 5, 7, 5, 4, 8])
+    18
+    '''","def find_Sum(arr): 
+    '''
+        求一个数组中所有重复出现过的元素的和。
+    如果一个数字多次出现，那么它在计算和时应该被计算多次。
+    >>> find_Sum([1,1,2])
+    2
+    >>> find_Sum([4, 5, 7, 5, 4, 8])
+    18
+    >>> find_Sum([1,1,2])
+    2
+    >>> find_Sum([4, 5, 7, 5, 4, 8])
+    18
+    '''",    return sum([x for x in arr if arr.count(x) > 1]),"def check(candidate):
+    assert candidate([1, 1, 2]) == 2
+    assert candidate([1,2,3,1,1,4,5,6]) == 3
+    assert candidate([4, 5, 7, 5, 4, 8]) == 18
+    assert candidate([1, 1, 1, 1, 1, 1]) == 6",find_Sum,"def rules(n):
+    import random
+    res = []
+    for i in range(n):
+        res.append(random.randint(1, int(n/2)))
+    return {
+        'arr': res
+    }",10000
+MBPP/149,"from typing import List
+def max_len_sub(arr:List[int]):
+    '''
+    Write a function to find the longest subsequence such that the difference between adjacents is one for the given array.
+    >>> max_len_sub([1, 2, 3, 4, 5, 3, 2])
+    6
+    '''","from typing import List
+def max_len_sub(arr:List[int]):
+    '''
+    给定一个数组arr，编写一个函数，求arr中的最长子序列的长度，该子序列中相邻元素的差值为1。
+    >>> max_len_sub([1, 2, 3, 4, 5, 3, 2])
+    6
+    '''","    n = len(arr)
+    dp = [1 for i in range(n)] 
+    for i in range(n): 
+        for j in range(i): 
+            if ((arr[i] == arr[j]+1) or (arr[i] == arr[j]-1)): 
+                dp[i] = max(dp[i], dp[j]+1) 
+    result = 1
+    for i in range(n): 
+        if (result < dp[i]): 
+            result = dp[i] 
+    return result","def check(candidate):
+    assert candidate([1, 2, 3, 4, 5, 3, 2]) == 6
+    assert candidate([10, 9, 4, 5, 4, 8, 6]) == 3
+    assert candidate([1, 2, 3, 2, 3, 7, 2, 1]) == 7",max_len_sub,"def rules(n):
+    import random
+    res = []
+    res.append(random.randint(1, int(n/2)))
+    for i in range(n):
+        if random.randint(0, 4) == 0:
+            res.append(res[-1]+1)
+        elif random.randint(0, 4) == 1:
+            res.append(res[-1]-1)
+        else:
+            res.append(random.randint(1, int(n/2)))
+    return {
+        'arr': res
+    }",3000
+MBPP/v522,"def lbs(arr): 
+    '''
+    Write a function to find the longest bitonic subsequence for the given array.
+    A bitonic subsequence is a subsequence of an array where the elements are first sorted in an increasing order, then in a decreasing order.
+    >>> lbs([1, 2, 3, 4, 5, 3, 2])
+    7
+    >>> lbs([5,1,2,3,4,5,4,3,2])
+    8
+    '''","def lbs(arr): 
+   '''
+    给定一个数组arr，编写一个函数，求arr中的最长双调子序列的长度，双调序列指该序列先递增，再递减。
+    >>> lbs([1, 2, 3, 4, 5, 3, 2])
+    7
+    >>> lbs([5,1,2,3,4,5,4,3,2])
+    8
+    '''","    n = len(arr) 
+    lis = [1 for i in range(n+1)] 
+    for i in range(1 , n): 
+        for j in range(0 , i): 
+            if ((arr[i] > arr[j]) and (lis[i] < lis[j] +1)): 
+                lis[i] = lis[j] + 1 
+    lds = [1 for i in range(n+1)] 
+    for i in reversed(range(n-1)): 
+        for j in reversed(range(i-1 ,n)): 
+            if(arr[i] > arr[j] and lds[i] < lds[j] + 1):
+                lds[i] = lds[j] + 1 
+    maximum = lis[0] + lds[0] - 1 
+    for i in range(1 , n): 
+        maximum = max((lis[i] + lds[i]-1), maximum) 
+    return maximum","def check(candidate):
+    assert candidate([0 , 8 , 4, 12, 2, 10 , 6 , 14 , 1 , 9 , 5 , 13, 3, 11 , 7 , 15]) == 7
+    assert candidate([1, 11, 2, 10, 4, 5, 2, 1]) == 6
+    assert candidate([80, 60, 30, 40, 20, 10]) == 5",lbs,"def rules(n):
+    import random
+    res = []
+    for i in range(n):
+        res.append(random.randint(1, n))
+    return {
+        'arr': res
+    }",3000
+MBPP/v564,"def count_Pairs(arr): 
+    '''
+    Write a python function to count unequal element pairs from the given array.
+    A unequal element pair means a pair (arr[i], arr[j]) where i < j and arr[i] != arr[j].
+    >>> count_Pairs([1, 2, 3, 4])
+    6
+    >>> count_Pairs([1, 1, 1])
+    0
+    '''","def count_Pairs(arr): 
+    '''
+    给定一个数组arr，编写一个函数，求arr中所有不相等的元素对的个数。
+    不相等的元素对指的是一组(arr[i],arr[j])，其中i < j且arr[i] != arr[j]。
+    >>> count_Pairs([1, 2, 3, 4])
+    6
+    >>> count_Pairs([1, 1, 1])
+    0
+    '''","    n = len(arr)
+    cnt = 0; 
+    for i in range(n): 
+        for j in range(i + 1,n): 
+            if (arr[i] != arr[j]): 
+                cnt += 1; 
+    return cnt","def check(candidate):
+    assert candidate([1,2,1]) == 2
+    assert candidate([1,1,1,1]) == 0
+    assert candidate([1,2,3,4,5]) == 10",count_Pairs,"def rules(n):
+    import random
+    res = []
+    for i in range(n):
+        res.append(random.randint(1, int(n**0.5)))
+    return {
+        'arr': res
+    }",3000
+MBPP/train620,"def largest_subset(arr): 
+    '''
+    Write a function to find the largest size of a subset where each pair is divisible.
+    >>> largest_subset([1, 3, 6, 13, 17, 18])
+    4
+    >>> largest_subset([2, 4, 8, 12])
+    3
+    '''","def largest_subset(arr): 
+    '''
+    给定一个数组a，编写一个函数，求a的最大子集的大小，该子集中的相邻每一对元素都可以整除。
+    >>> largest_subset([1, 3, 6, 13, 17, 18])
+    4
+    >>> largest_subset([2, 4, 8, 12])
+    3
+    '''","    n = len(arr)
+    dp = [0 for i in range(n)] 
+    dp[n - 1] = 1; 
+    for i in range(n - 2, -1, -1): 
+        mxm = 0; 
+        for j in range(i + 1, n): 
+            if arr[j] % arr[i] == 0 or arr[i] % arr[j] == 0: 
+                mxm = max(mxm, dp[j]) 
+        dp[i] = 1 + mxm 
+    return max(dp)","def check(candidate):
+    assert candidate([1, 3, 6, 13, 17, 18]) == 4
+    assert candidate([10, 5, 3, 15, 20]) == 3
+    assert candidate([18, 1, 3, 6, 13, 17]) == 4",largest_subset,"def rules(n):
+    import random
+    res = []
+    for i in range(n):
+        res.append(random.randint(1, int(n**0.5)))
+    return {
+        'arr': res
+    }",3000
+MBPP/train689,"def min_jumps(arr): 
+    '''
+    write a function to find the minimum number of jumps to reach the end of the array from the fisrt element. For the given array 'arr' of integers, each element represents the max number of steps that can be made forward from that element.
+    >>> min_jumps([1, 3, 6, 13, 17, 18])
+    3
+    '''","def min_jumps(arr): 
+    '''
+    编写一个函数，找出从数组的第 1 个元素跳转到数组末尾的最少步数。对于给定的整数数组 ""arr""，每个元素的值代表从该元素向前移动的最大步数。
+    >>> min_jumps([1, 3, 6, 13, 17, 18])
+    3
+    '''","    n = len(arr)
+    jumps = [0 for i in range(n)] 
+    jumps[0] = 0 
+    for i in range(1, n): 
+        jumps[i] = float('inf') 
+        for j in range(i): 
+            if (i <= j + arr[j]) and (jumps[j] != float('inf')): 
+                jumps[i] = min(jumps[i], jumps[j] + 1) 
+                break 
+    return jumps[n-1]","def check(candidate):
+    assert candidate([1, 3, 6, 1, 0, 9]) == 3
+    assert candidate([1, 3, 5, 8, 9, 2, 6, 7, 6, 8, 9]) == 3
+    assert candidate([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]) == 10",min_jumps,"def rules(n):
+    import random
+    res = []
+    for i in range(n):
+        res.append(random.randint(1, int(n**0.5)))
+    return {
+        'arr': res
+    }",3000
+leetcode/21,"def mergeTwoLists(list1, list2):
+    '''
+    Given two sorted list 'list1' and 'list2', merge them into one sorted list.
+    >>> mergeTwoLists([1,2,4], [1,3,4])
+    [1, 1, 2, 3, 4, 4]
+    >>> mergeTwoLists([], [])
+    []
+    '''
+    list_res = list1 + list2
+    list_res.sort()
+    return list_res","def mergeTwoLists(list1, list2):
+    '''
+    给定两个排序好的列表 'list1' 和 'list2', 把它们合并成一个排序好的列表。
+    >>> mergeTwoLists([1,2,4], [1,3,4])
+    [1, 1, 2, 3, 4, 4]
+    >>> mergeTwoLists([], [])
+    []
+    '''
+    list_res = list1 + list2
+    list_res.sort()
+    return list_res","    list_res = list1 + list2
+    list_res.sort()
+    return list_res","def check(candidate):
+    assert candidate([1,2,4], [1,3,4]) == [1, 1, 2, 3, 4, 4]
+    assert candidate([], []) == []
+    assert candidate([1,1,2],[3]) == [1,1,2,3]",mergeTwoLists,"def rules(n):
+    import random
+    list1 = []
+    list2 = []
+    for i in range(n):
+        list1.append(random.randint(1, int(n/2)))
+        list2.append(random.randint(1, int(n/2)))
+    return {
+        'list1': list1,
+        'list2': list2
+    }",100000
+leetcode/35,"def searchInsert(nums, target):
+    '''
+    Given a sorted array 'nums' of distinct integers and a target value, return the index if the target is found. If not, return the index where it would be if it were inserted in order.
+    >>> searchInsert([1,3,5,6], 5)
+    2
+    >>> searchInsert([1,3,5,6], 2)
+    1
+    >>> searchInsert([1,3,5,6], 7)
+    4
+    '''","def searchInsert(nums, target):
+    '''
+    给定一个有序数组 'nums' 和一个目标值 'target', 如果 'target' 在数组中存在, 则返回它的索引。如果 'target' 不在数组中存在, 则返回它将会被按顺序插入的位置的索引。
+    >>> searchInsert([1,3,5,6], 5)
+    2
+    >>> searchInsert([1,3,5,6], 2)
+    1
+    >>> searchInsert([1,3,5,6], 7)
+    4
+    '''","    if target in nums:
+        return nums.index(target)
+    else:
+        nums.append(target)
+        nums.sort()
+        return nums.index(target)","def check(candidate):
+    assert candidate([1,3,5,6], 5) == 2
+    assert candidate([1,3,5,6], 2) == 1
+    assert candidate([1,3,5,6], 7) == 4
+    assert candidate([1,3,5,6], 0) == 0",searchInsert,"def rules(n):
+    import random
+    nums = []
+    for i in range(n):
+        nums.append(random.randint(1, int(n/2)))
+    nums.sort()
+    return {
+        'nums': nums,
+        'target': random.randint(1, int(n/2))
+    }",20000
+leetcode/217,"def containsDuplicate(nums):
+    '''
+    Given an integer array 'nums', return true if any value appears at least twice in the array, and return false if every element is distinct.
+    >>> containsDuplicate([1,2,3,1])
+    True
+    >>> containsDuplicate([1,2,3,4])
+    False
+    '''","def containsDuplicate(nums):
+    '''
+    给定一个整数数组 'nums', 如果数组中存在重复元素, 则返回 true, 如果数组中不存在重复元素, 则返回 false。
+    >>> containsDuplicate([1,2,3,1])
+    True
+    >>> containsDuplicate([1,2,3,4])
+    False
+    '''","    if len(nums) == len(set(nums)):
+        return False
+    else:
+        return True","def check(candidate):
+    assert candidate([1,2,3,1]) == True
+    assert candidate([1,2,3,4]) == False
+    assert candidate([1,1,1,3,3,4,3,2,4,2]) == True",containsDuplicate,"def rules(n):
+    import random
+    nums = []
+    for i in range(n):
+        nums.append(random.randint(0, int(n**2)))
+    return {
+        'nums': nums
+    }",10000
+leetcode/697,"import collections
+def findShortestSubArray(nums):
+    '''
+    Given a non-empty array of non-negative integers nums, the degree of this array is defined as the maximum frequency of any one of its elements.
+    Your task is to find the smallest possible length of a (contiguous) subarray of nums, that has the same degree as nums.
+    >>> findShortestSubArray([1,2,2,3,1])
+    2
+    >>> findShortestSubArray([1,2,2,3,1,4,2])
+    6
+    '''","import collections
+def findShortestSubArray(nums):
+    '''
+    给定一个非空非负整数数组 'nums', 数组的度的定义为数组中任一元素出现频数的最大值。
+    你的任务是找到与 'nums' 拥有相同大小的度的最短连续子数组, 返回其长度。
+    >>> findShortestSubArray([1,2,2,3,1])
+    2
+    >>> findShortestSubArray([1,2,2,3,1,4,2])
+    6
+    '''","    nums_dict = collections.Counter(nums)
+    max_count = max(nums_dict.values())
+    max_count_list = []
+    for i in nums_dict:
+        if nums_dict[i] == max_count:
+            max_count_list.append(i)
+    min_length = len(nums)
+    for i in max_count_list:
+        min_length = min(min_length, len(nums) - nums[::-1].index(i) - nums.index(i))
+    return min_length","def check(candidate):
+    assert candidate([1,2,2,3,1]) == 2
+    assert candidate([1,2,2,3,1,4,2]) == 6
+    assert candidate([1,2,2,3,1,4,2,1,1,1,1,1,1,1,1,1,1,1]) == 18",findShortestSubArray,"def rules(n):
+    import random
+    nums = []
+    for i in range(n):
+        nums.append(random.randint(0, min(int(n/2),1000)))
+    return {
+        'nums': nums
+    }",3000
+leetcode/832,"import collections
+def flipAndInvertImage(image):
+    '''
+    Given an n x n binary matrix image, flip the image horizontally, then invert it, and return the resulting image.
+    To flip an image horizontally means that each row of the image is reversed.
+    For example, flipping [1,1,0] horizontally results in [0,1,1].
+    To invert an image means that each 0 is replaced by 1, and each 1 is replaced by 0.
+    For example, inverting [0,1,1] results in [1,0,0].
+    >>> flipAndInvertImage([[1,1,0],[1,0,1],[0,0,0]])
+    [[1, 0, 0], [0, 1, 0], [1, 1, 1]]
+    '''","import collections
+def flipAndInvertImage(image):
+    '''
+    Given an n x n binary matrix image, flip the image horizontally, then invert it, and return the resulting image.
+    To flip an image horizontally means that each row of the image is reversed.
+    For example, flipping [1,1,0] horizontally results in [0,1,1].
+    To invert an image means that each 0 is replaced by 1, and each 1 is replaced by 0.
+    For example, inverting [0,1,1] results in [1,0,0].
+    >>> flipAndInvertImage([[1,1,0],[1,0,1],[0,0,0]])
+    [[1, 0, 0], [0, 1, 0], [1, 1, 1]]
+    '''","    for i in range(len(image)):
+        image[i] = image[i][::-1]
+        for j in range(len(image[i])):
+            image[i][j] = 1 - image[i][j]
+    return image","def check(candidate):
+    assert candidate([[1,1,0],[1,0,1],[0,0,0]]) == [[1, 0, 0], [0, 1, 0], [1, 1, 1]]
+    assert candidate([[1,1,0,0],[1,0,0,1],[0,1,1,1],[1,0,1,0]]) == [[1, 1, 0, 0], [0, 1, 1, 0], [0, 0, 0, 1], [1, 0, 1, 0]]",flipAndInvertImage,"def rules(n):
+    import random
+    image = []
+    for i in range(n):
+        image.append([])
+        for j in range(n):
+            image[i].append(random.randint(0,1))
+    return {
+        'image': image
+    }",3000
+leetcode/300,"def lengthOfLIS(nums):
+    '''
+    Given an integer array nums, return the length of the longest strictly increasing subsequence.
+    A subsequence is a sequence that can be derived from an array by deleting some or no elements without changing the order of the remaining elements.
+    For example, [3,6,2,7] is a subsequence of the array [0,3,1,6,2,2,7].
+    >>> lengthOfLIS([10,9,2,5,3,7,101,18])
+    4
+    >>> lengthOfLIS([7,7,7,7,7,7,7])
+    1
+    '''","def lengthOfLIS(nums):
+    '''
+    给定一个整数数组 'nums', 返回最长严格递增子序列的长度。
+    子序列是从数组中删除一些元素（或不删除）得到的序列, 并且元素的相对位置不变。
+    例如, [3,6,2,7] 是数组 [0,3,1,6,2,2,7] 的子序列。
+    >>> lengthOfLIS([10,9,2,5,3,7,101,18])
+    4
+    >>> lengthOfLIS([7,7,7,7,7,7,7])
+    1
+    '''","    if len(nums) == 0:
+        return 0
+    dp = [1] * len(nums)
+    for i in range(len(nums)):
+        for j in range(i):
+            if nums[j] < nums[i]:
+                dp[i] = max(dp[i], dp[j]+1)
+    return max(dp)","def check(candidate):
+    assert candidate([10,9,2,5,3,7,101,18]) == 4
+    assert candidate([7,7,7,7,7,7,7]) == 1
+    assert candidate([0,1,0,3,2,3]) == 4
+    assert candidate([7,7,7,7,7,7,8]) == 2",lengthOfLIS,"def rules(n):
+    import random
+    nums = []
+    for i in range(n):
+        nums.append(random.randint(0, n))
+    return {
+        'nums': nums
+    }",3000
+leetcode/414,"def thirdMax(nums):
+    '''
+    Given an integer array nums, return the third maximum number in this array. If the third maximum does not exist, return the maximum number.
+    >>> thirdMax([3,2,1])
+    1
+    >>> thirdMax([1,2,2,1])
+    2
+    '''","def thirdMax(nums):
+    '''
+    给定一个整数数组 'nums', 返回数组中第三大的数。如果不存在, 则返回最大的数。
+    >>> thirdMax([3,2,1])
+    1
+    >>> thirdMax([1,2,2,1])
+    2
+    '''","    nums = list(set(nums))
+    nums.sort()
+    if len(nums) < 3:
+        return nums[-1]
+    else:
+        return nums[-3]","def check(candidate):
+    assert candidate([3,2,1]) == 1
+    assert candidate([1,2,2,1]) == 2
+    assert candidate([1,2]) == 2
+    assert candidate([2,2,3,1]) == 1",thirdMax,"def rules(n):
+    import random
+    nums = []
+    for i in range(n):
+        nums.append(random.randint(0, n))
+    return {
+        'nums': nums
+    }",10000
+leetcode/961,"import collections
+def repeatedNTimes(nums):
+    '''
+    In a array nums of size 2 * n, there are n + 1 unique elements, and exactly one of these elements is repeated n times.
+    Return the element repeated n times.
+    >>> repeatedNTimes([1,2,3,3])
+    3
+    '''","import collections
+def repeatedNTimes(nums):
+    '''
+    在大小为 2 * n 的数组 'nums' 中有 n + 1 个不同的元素, 其中有一个元素重复了 n 次。
+    返回重复了 n 次的那个元素。
+    Return the element repeated n times.
+    >>> repeatedNTimes([1,2,3,3])
+    3
+    '''","    nums_dict = collections.Counter(nums)
+    for i in nums_dict:
+        if nums_dict[i] == len(nums)/2:
+            return i","def check(candidate):
+    assert candidate([1,2,3,3]) == 3
+    assert candidate([2,1,2,5,3,2]) == 2
+    assert candidate([5,1,5,2,5,3,5,4]) == 5",repeatedNTimes,"def rules(n):
+    import random
+    nums = []
+    for i in range(n):
+        nums.append(i)
+        nums.append(n)
+    random.shuffle(nums)
+    return {
+        'nums': nums
+    }",10000
+leetcode/747,"def dominantIndex(nums):
+    '''
+    You are given an integer array nums where the largest integer is unique.
+    Determine whether the largest element in the array is at least twice as much as every other number in the array. If it is, return the index of the largest element, or return -1 otherwise.
+    For example, if nums = [1, 2, 3, 4], the largest element is 4, and it is at least twice as much as every other number in the array, so return 3.
+    >>> dominantIndex([3,6,1,0])
+    1
+    >>> dominantIndex([1,2,3,4])
+    -1
+    '''","def dominantIndex(nums):
+    '''
+    给定一个整数数组 'nums', 其中最大的整数是唯一的。
+    判断最大元素是否至少是数组中每个其他数字的两倍。如果是, 返回最大元素的索引, 否则返回 -1。
+    例如, 如果 'nums' = [1, 2, 3, 4], 最大元素是 4, 并且它至少是数组中每个其他数字的两倍, 所以返回 3。
+    >>> dominantIndex([3,6,1,0])
+    1
+    >>> dominantIndex([1,2,3,4])
+    -1
+    '''","    if len(nums) == 1:
+        return 0
+    max_num = max(nums)
+    max_index = nums.index(max_num)
+    nums.remove(max_num)
+    if max_num >= 2 * max(nums):
+        return max_index
+    else:
+        return -1","def check(candidate):
+    assert candidate([3,6,1,0]) == 1
+    assert candidate([1,2,3,4]) == -1
+    assert candidate([1,0]) == 0",dominantIndex,"def rules(n):
+    import random
+    nums = []
+    for i in range(n-1):
+        nums.append(random.randint(0, n))
+    nums.append(random.randint(n, 3*n))
+    return {
+        'nums': nums
+    }",10000
+leetcode/1200,"def minimumAbsDifference(arr):
+    '''
+    Given an array of distinct integers arr, find all pairs of elements with the minimum absolute difference of any two elements.
+    Return a list of pairs in ascending order(with respect to pairs), each pair [a, b] follows,
+    a, b are from arr; a < b; b - a equals to the minimum absolute difference of any two elements in arr.
+    >>> minimumAbsDifference([4,2,1,3])
+    [[1, 2], [2, 3], [3, 4]]
+    >>> minimumAbsDifference([1,3,6,10,15])
+    [[1, 3]]
+    '''","def minimumAbsDifference(arr):
+    '''
+    给定一个没有重复数字的整数数组 'arr', 找到并返回所有在 'arr' 中的绝对差值最小的数对。
+    按升序返回所有数对, 每个数对 [a, b] 满足:
+    a, b 是 arr 中的两个数; a < b; b - a 等于 'arr' 中任意两个数的绝对差值中的最小值。
+    >>> minimumAbsDifference([4,2,1,3])
+    [[1, 2], [2, 3], [3, 4]]
+    >>> minimumAbsDifference([1,3,6,10,15])
+    [[1, 3]]
+    '''","    arr.sort()
+    min_diff = arr[1] - arr[0]
+    for i in range(len(arr)-1):
+        min_diff = min(min_diff, arr[i+1] - arr[i])
+    res = []
+    for i in range(len(arr)-1):
+        if arr[i+1] - arr[i] == min_diff:
+            res.append([arr[i], arr[i+1]])
+    return res","def check(candidate):
+    assert candidate([4,2,1,3]) == [[1, 2], [2, 3], [3, 4]]
+    assert candidate([1,3,6,10,15]) == [[1, 3]]
+    assert candidate([3,8,-10,23,19,-4,-14,27]) == [[-14, -10], [19, 23], [23, 27]]",minimumAbsDifference,"def rules(n):
+    import random
+    arr = []
+    tmp = []
+    for i in range(n**1.5):
+        tmp.append(i)
+    arr = random.sample(tmp, n)
+    return {
+        'arr': arr
+    }",10000
+leetcode/1385,"def findTheDistanceValue(arr1, arr2, d):
+    '''
+    Given two integer arrays 'arr1' and 'arr2', and the integer 'd', return the distance value between the two arrays.
+    The distance value is defined as the number of elements 'arr1[i]' such that there is not any element 'arr2[j]' where |arr1[i]-arr2[j]| <= d.
+    >>> findTheDistanceValue([4,5,8], [10,9,1,8], 2)
+    2
+    >>> findTheDistanceValue([1,4,2,3], [-4,-3,6,10,20,30], 3)
+    2
+    >>> findTheDistanceValue([2,1,100,3], [-5,-2,10,-3,7], 6)
+    1
+    '''","def findTheDistanceValue(arr1, arr2, d):
+    '''
+    给定两个整数数组 'arr1' 和 'arr2', 以及一个整数 'd', 返回两个数组之间的距离值。
+    距离值 定义为满足arr1数组中指定元素arr[i]的数量，满足对于arr2中的每个元素arr2[j]，都有|arr[i]-arr2[j]| > d。
+    >>> findTheDistanceValue([4,5,8], [10,9,1,8], 2)
+    2
+    >>> findTheDistanceValue([1,4,2,3], [-4,-3,6,10,20,30], 3)
+    2
+    >>> findTheDistanceValue([2,1,100,3], [-5,-2,10,-3,7], 6)
+    1
+    '''","    res = 0
+    for i in arr1:
+        flag = True
+        for j in arr2:
+            if abs(i-j) <= d:
+                flag = False
+                break
+        if flag:
+            res += 1
+    return res","def check(candidate):
+    assert candidate([4,5,8], [10,9,1,8], 2) == 2
+    assert candidate([1,4,2,3], [-4,-3,6,10,20,30], 3) == 2
+    assert candidate([2,1,100,3], [-5,-2,10,-3,7], 6) == 1",findTheDistanceValue,"def rules(n):
+    import random
+    import math
+    arr1 = []
+    arr2 = []
+    for i in range(n):
+        arr1.append(random.randint(0, n))
+        arr2.append(random.randint(0, n))
+    d = random.randint(0, int(math.log(n+2)))
+    return {
+        'arr1': arr1,
+        'arr2': arr2,
+        'd': d
+    }",5000
+leetcode/349,"def intersection(nums1, nums2):
+    '''
+    Given two integer arrays nums1 and nums2, return an array of their intersection. Each element in the result must be unique and you must return the result in ascebding order.
+    >>> intersection([1,2,2,1], [2,2])
+    [2]
+    >>> intersection([4,9,5], [9,4,9,8,4])
+    [4,9]
+    '''","def intersection(nums1, nums2):
+    '''
+    给定两个整数数组 'nums1' 和 'nums2', 返回它们的交集。返回的列表中的每个元素都是唯一的, 并且以升序返回。
+    >>> intersection([1,2,2,1], [2,2])
+    [2]
+    >>> intersection([4,9,5], [9,4,9,8,4])
+    [4,9]
+    '''","    res = []
+    for i in nums1:
+        if i in nums2 and i not in res:
+            res.append(i)
+    return res","def check(candidate):
+    assert candidate([1,2,2,1], [2,2]) == [2]
+    assert candidate([4,9,5], [9,4,9,8,4]) == [4,9]
+    assert candidate([1,2,3,4,5,6,7,8,9], [2,4,6,8,10]) == [2,4,6,8]",intersection,"def rules(n):
+    import random
+    nums1 = []
+    nums2 = []
+    for i in range(n):
+        nums1.append(random.randint(0, 2*n))
+        nums2.append(random.randint(0, 2*n))
+    return {
+        'nums1': nums1,
+        'nums2': nums2
+    }",5000
+leetcode/1491,"def average(salary):
+    '''
+    Given an array of unique integers salary where salary[i] is the salary of the employee i.
+    Return the average salary in a rounded integer of employees excluding the minimum and maximum salary.
+    >>> average([4000,3000,1000,2000])
+    2500
+    >>> average([1000,2000,3000])
+    2000
+    '''","def average(salary):
+    '''
+    给定一个没有重复整数的数组 'salary', 其中 salary[i] 是第 i 个员工的工资。
+    返回去掉最低工资和最高工资后的平均工资，结果四舍五入，返回整数。
+    >>> average([4000,3000,1000,2000])
+    2500
+    >>> average([1000,2000,3000])
+    2000
+    '''","    salary.sort()
+    salary.pop()
+    salary.pop(0)
+    return int(sum(salary)/len(salary))","def check(candidate):
+    assert candidate([4000,3000,1000,2000]) == 2500
+    assert candidate([1000,2000,3000]) == 2000
+    assert candidate([6000,5000,4000,3000,2000,1000]) == 3500",average,"def rules(n):
+    import random
+    salary = []
+    for i in range(n):
+        salary.append(random.randint(0, 2*n))
+    return {
+        'salary': salary
+    }",10000
+leetcode/561,"def arrayPairSum(nums):
+    '''
+    Given an integer array nums of 2n integers, group these integers into n pairs (a1, b1), (a2, b2), ..., (an, bn) 
+    such that the sum of min(ai, bi) for all i is maximized. Return the maximized sum.
+    >>> arrayPairSum([1,4,3,2])
+    4
+    >>> arrayPairSum([6,2,6,5,1,2])
+    9
+    '''","def arrayPairSum(nums):
+    '''
+    给定一个长度为 2n 的整数数组 nums, 将 nums 中的元素两两配对并组成 n 个数对, 使得每对数对的最小值之和最大。
+    返回最大的和。
+    >>> arrayPairSum([1,4,3,2])
+    4
+    >>> arrayPairSum([6,2,6,5,1,2])
+    9
+    '''","    nums.sort()
+    res = 0
+    for i in range(len(nums)):
+        if i % 2 == 0:
+            res += nums[i]
+    return res","def check(candidate):
+    assert candidate([1,4,3,2]) == 4
+    assert candidate([6,2,6,5,1,2]) == 9
+    assert candidate([1,1,1,1,1,1]) == 3",arrayPairSum,"def rules(n):
+    import random
+    nums = []
+    for i in range(2*n):
+        nums.append(random.randint(0, n))
+    return {
+        'nums': nums
+    }",10000
+leetcode/209,"def minSubArrayLen(target, nums):
+    '''
+    Given an array of positive integers nums and a positive integer target, return the minimal length of a contiguous subarray [numsl, numsl+1, ..., numsr-1, numsr] 
+    of which the sum is greater than or equal to target. If there is no such subarray, return 0 instead.
+    >>> minSubArrayLen(7, [2,3,1,2,4,3])
+    2
+    >>> minSubArrayLen(4, [1,4,4])
+    1
+    >>> minSubArrayLen(11, [1,1,1,1,1,1,1,1])
+    0
+    '''","def minSubArrayLen(target, nums):
+    '''
+   给定一个含有 n 个正整数的数组和一个正整数 target 。
+    找出该数组中满足其总和大于等于 target 的长度最小的 连续子数组 [numsl, numsl+1, ..., numsr-1, numsr] ，返回其长度。
+    如果不存在符合条件的子数组，返回 0 。
+    >>> minSubArrayLen(7, [2,3,1,2,4,3])
+    2
+    >>> minSubArrayLen(4, [1,4,4])
+    1
+    >>> minSubArrayLen(11, [1,1,1,1,1,1,1,1])
+    0
+    '''","    if sum(nums) < target:
+        return 0
+    min_length = len(nums)
+    for i in range(len(nums)):
+        for j in range(i, len(nums)):
+            if sum(nums[i:j+1]) >= target:
+                min_length = min(min_length, j-i+1)
+                break
+    return min_length","def check(candidate):
+    assert candidate(7, [2,3,1,2,4,3]) == 2
+    assert candidate(4, [1,4,4]) == 1
+    assert candidate(11, [1,1,1,1,1,1,1,1]) == 0",minSubArrayLen,"def rules(n):
+    import random
+    nums = []
+    for i in range(2*n):
+        nums.append(random.randint(1, n))
+    return {
+        'target': random.randint(n, 2*n),
+        'nums': nums
+    }",3000
+leetcode/1,"def twoSum(nums, target):
+    '''
+    Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.
+    You may assume that each input would have exactly one solution, and you may not use the same element twice.
+    Return the two index in ascending order.
+    >>> twoSum([3,2,4], 6)
+    [1, 2]
+    >>> twoSum([3,3], 6)
+    [0, 1]
+    '''","def twoSum(nums, target):
+    '''
+    给定一个整数数组 nums 和一个整数目标值 target，请你在该数组中找出 和为目标值 target 的那两个整数，并返回它们的数组下标。
+    你可以假设每种输入只会对应一个答案。但是，数组中同一个元素在答案里不能重复出现。
+    按升序返回两个下标。
+    >>> twoSum([3,2,4], 6)
+    [1, 2]
+    >>> twoSum([3,3], 6)
+    [0, 1]
+    '''","    for i in range(len(nums)):
+        for j in range(i+1, len(nums)):
+            if nums[i]+nums[j] == target:
+                return [i,j]","def check(candidate):
+    assert candidate([3,2,4], 6) == [1, 2]
+    assert candidate([3,3], 6) == [0, 1]
+    assert candidate([1,2,3,4,5,6,7,8,9], 17) == [7, 8]",twoSum,"def rules(n):
+    import random
+    nums = []
+    for i in range(n-2):
+        nums.append(random.randint(0, n))
+    nums.append(n+2)
+    nums.append(n+3)
+    random.shuffle(nums)
+    tar = 2*n+5
+    return {
+        'nums': nums,
+        'target': tar
+    }",3000
+leetcode/409,"def longestPalindrome(s):
+    '''
+    Given a string s which consists of lowercase letters, return the length of the longest palindrome that can be built with those letters.
+    Letters are case sensitive, for example, ""Aa"" is not considered a palindrome here.
+    >>> longestPalindrome(""abccccdd"")
+    7
+    >>> longestPalindrome(""a"")
+    1
+    >>> longestPalindrome(""bb"")
+    2
+    '''","def longestPalindrome(s):
+    '''
+    给你一个包含小写字母的字符串 's', 返回使用's'中的字符可以构造的最长回文串的长度。
+    >>> longestPalindrome(""abccccdd"")
+    7
+    >>> longestPalindrome(""a"")
+    1
+    >>> longestPalindrome(""bb"")
+    2
+    '''","    s_dict = collections.Counter(s)
+    res = 0
+    flag = False
+    for i in s_dict:
+        if s_dict[i] % 2 == 0:
+            res += s_dict[i]
+        else:
+            res += s_dict[i] - 1
+            flag = True
+    if flag:
+        res += 1
+    return res","def check(candidate):
+    assert candidate(""abccccdd"") == 7
+    assert candidate(""a"") == 1
+    assert candidate(""bb"") == 2",longestPalindrome,"def rules(n):
+    import random
+    s=''
+    for i in range(n):
+        s += chr(random.randint(97, 122))
+    return {
+        's': s
+    }",3000
+leetcode/121,"def maxProfit(prices):
+    '''
+    You are given an array prices where prices[i] is the price of a given stock on the ith day.
+    You want to maximize your profit by choosing a single day to buy one stock and choosing a different day in the future to sell that stock.
+    Return the maximum profit you can achieve from this transaction. If you cannot achieve any profit, return 0.
+    >>> maxProfit([7,1,5,3,6,4])
+    5
+    >>> maxProfit([7,6,4,3,1])
+    0
+    '''","def maxProfit(prices):
+    '''
+    给定一个数组 prices ，它的第 i 个元素 prices[i] 表示一支给定股票第 i 天的价格。
+    你只能选择 某一天 买入这只股票，并选择在 未来的某一个不同的日子 卖出该股票。设计一个算法来计算你所能获取的最大利润。
+    返回你可以从这笔交易中获取的最大利润。如果你不能获取任何利润，返回 0 。
+    >>> maxProfit([7,1,5,3,6,4])
+    5
+    >>> maxProfit([7,6,4,3,1])
+    0
+    '''","    max_profit = 0
+    for i in range(len(prices)):
+        for j in range(i+1, len(prices)):
+            max_profit = max(max_profit, prices[j]-prices[i])
+    return max_profit","def check(candidate):
+    assert candidate([7,1,5,3,6,4]) == 5
+    assert candidate([7,6,4,3,1]) == 0
+    assert candidate([1,2,3,4,5,6,7,8,9]) == 8",maxProfit,"def rules(n):
+    import random
+    nums = []
+    for i in range(n):
+        nums.append(random.randint(0, n))
+    return {
+        'prices': nums
+    }",3000

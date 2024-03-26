@@ -1,0 +1,12 @@
+accelerate==0.20.3
+human_eval.egg==info
+numpy==1.24.4
+openai==0.27.6
+torch==2.1.1
+tqdm==4.64.1
+transformers==4.35.2
+matplotlib==3.7.0
+torch==2.1.1
+torchaudio==0.12.1
+torchvision==0.13.1
+pandas==1.2.0

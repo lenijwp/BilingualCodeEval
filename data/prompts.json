@@ -1,0 +1,7 @@
+{
+    "DI":"{prompt}",
+    "BP":"# Complete the following Python code without any tests or explanation\n{prompt}",
+    "CoT":"# Complete the following Python code without any tests or explanation,let's think step by step\n{prompt}",
+    "QA":"# Complete the following Python code by a concise and efficient implementation.\n{prompt} ",
+    "QA+CoT":"# Complete the following Python code by a concise and efficient implementation,let's think step by step\n{prompt}"
+}
